@@ -15,7 +15,7 @@ import { faker } from "@faker-js/faker";
 
 // Variables
 const Title = "Bug";
-let RndTitle = faker.word.noun();
+let RndTitle = faker.lorem.word();
 const RndDescription = faker.lorem.sentence(7);
 const Description = "My bug description";
 
