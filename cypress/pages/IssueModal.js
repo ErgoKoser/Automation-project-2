@@ -22,6 +22,7 @@ class IssueModal {
     this.doneButton = "Done";
     this.estimateTime = "estimated";
     this.loggedTime = "logged";
+    this.remainingTime = "remaining";
     this.noTimeLogged = "No time logged";
   }
 
@@ -52,6 +53,12 @@ class IssueModal {
   getLoggedTime() {
     return cy.get(this.issueDetailModal).within(() => {
       cy.contains(this.loggedTime);
+    });
+  }
+
+  getRemainingTime() {
+    return cy.get(this.issueDetailModal).within(() => {
+      cy.contains(this.remainingTime);
     });
   }
 
@@ -146,6 +153,12 @@ class IssueModal {
     });
   }
 
+  validateRemainigTimeIsVisible() {
+    cy.get(this.issueDetailModal).within(() => {
+      cy.contains(this.remainingTime).should("be.visible");
+    });
+  }
+
   validateNoTimeLoggedVisible() {
     cy.get(this.issueDetailModal).within(() => {
       cy.contains(this.noTimeLogged).should("be.visible");
@@ -199,6 +212,10 @@ class IssueModal {
 
   getTimeSpentHours() {
     return cy.get(this.inputNumber).eq(1);
+  }
+
+  getTimeRemainingHours() {
+    return cy.get(this.inputNumber).eq(2);
   }
 
   clickDoneButton() {

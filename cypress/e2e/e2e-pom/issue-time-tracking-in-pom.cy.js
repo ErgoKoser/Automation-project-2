@@ -1,8 +1,9 @@
 import IssueModal from "../../pages/IssueModal";
 import { faker } from "@faker-js/faker";
 
-const estimateTime = 3;
-const timeSpentHRS = 6;
+const estimateTime = 10;
+const timeSpentHRS = 5;
+const timeRemainingHours = 5;
 const rndTimeSpent = faker.number.int({ min: 2, max: 10 });
 const rndEstimateTime = faker.number.int({ min: 2, max: 10 });
 const rndTitle = faker.word.words(2);
@@ -15,22 +16,20 @@ describe("My tests for Issue time tracking functions", () => {
       .should("eq", `${Cypress.env("baseUrl")}project/board`)
       .then((url) => {
         cy.visit(url + "/board?modal-issue-create=true");
+        // Create new issue
+        getIssueCreate();
+        fillDescriptionField();
+        fillTitleField();
+        SelectIssueTypeBug();
+        clikCreateIssue();
+        validateIssueIsCreated();
       });
   });
 
   it("Should add, edit and remove Time estimation ", () => {
-    // Create new issue
-    getIssueCreate();
-    fillDescriptionField();
-    fillTitleField();
-    SelectIssueTypeBug();
-    setPriorityLow();
-    setAssigneePickleRick();
-    clikCreateIssue();
-    validateIssueIsCreated();
-
     // Add Estimated time to newnly created issue
     IssueModal.openFirstIssue();
+    IssueModal.validateEstimateTimeIsNotVisible();
     IssueModal.getOriginalEstimateHours().click().type(estimateTime);
     IssueModal.getOriginalEstimateHours().should("have.value", estimateTime);
     IssueModal.validateEstimatedTimeIsVisible(estimateTime);
@@ -47,33 +46,27 @@ describe("My tests for Issue time tracking functions", () => {
     IssueModal.openFirstIssue();
     IssueModal.getOriginalEstimateHours().click().clear();
     IssueModal.getOriginalEstimateHours().should("have.value", "");
-    IssueModal.validateEstimateTimeIsNotVisible();
     IssueModal.closeDetailModal();
+    IssueModal.openFirstIssue();
+    IssueModal.validateEstimateTimeIsNotVisible();
   });
 
   it("Should add, edit and remove time from Time tracking ", () => {
-    // Create new issue
-    getIssueCreate();
-    fillDescriptionField();
-    fillTitleField();
-    SelectIssueTypeBug();
-    setPriorityLow();
-    setAssigneePickleRick();
-    clikCreateIssue();
-    validateIssueIsCreated();
-
     // Log time to Time tracking
     IssueModal.openFirstIssue();
     IssueModal.openTimeTrackingModal();
     IssueModal.getTimeSpentHours().type(timeSpentHRS);
+    IssueModal.getTimeRemainingHours().type(timeRemainingHours);
     IssueModal.clickDoneButton();
 
-    /*Assert that Time tracking modal is not open and
-    Looged time is visible on issue view*/
+    /*Assert that Time tracking modal is not open,
+    Looged time and Remaining time is visible on issue view*/
     IssueModal.getTimeTrackingModal().should("not.exist");
     cy.reload();
     IssueModal.validateLoggedTimeIsVisible();
     IssueModal.getLoggedTime().should("contain", timeSpentHRS);
+    IssueModal.validateRemainigTimeIsVisible();
+    IssueModal.getRemainingTime().should("contain", timeRemainingHours);
     IssueModal.closeDetailModal();
 
     // Edit time tracking Time Spent
@@ -96,12 +89,12 @@ describe("My tests for Issue time tracking functions", () => {
     IssueModal.openTimeTrackingModal();
     IssueModal.getTimeTrackingModal();
     IssueModal.getTimeSpentHours().click().clear();
+    IssueModal.getTimeRemainingHours().click().clear();
     IssueModal.clickDoneButton();
 
     /*Assert that Time tracking modal is not open and
     "No time logged" displayed on issue view*/
     IssueModal.getTimeTrackingModal().should("not.exist");
-    cy.reload();
     IssueModal.validateNoTimeLoggedVisible();
     IssueModal.closeDetailModal();
   });
@@ -130,17 +123,6 @@ function SelectIssueTypeBug() {
     .trigger("mouseover")
     .trigger("click");
 }
-
-function setPriorityLow() {
-  cy.get('[data-testid="select:priority"]').click();
-  cy.get('[data-testid="select-option:Low"]').click();
-}
-
-function setAssigneePickleRick() {
-  cy.get('[data-testid="form-field:userIds"]').click();
-  cy.get('[data-testid="select-option:Pickle Rick"]').click();
-}
-
 function validateIssueIsCreated() {
   cy.get('[data-testid="modal:issue-create"]').should("not.exist");
   cy.contains("Issue has been successfully created.").should("be.visible");
